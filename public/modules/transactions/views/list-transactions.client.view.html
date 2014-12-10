@@ -1,0 +1,37 @@
+<section data-ng-controller="TransactionsController" data-ng-init="find()">
+    <span class="pull-right" data-ng-show="((authentication.user) && (authentication.user._id == account.user._id))">
+        <a class="btn btn-primary" href="/#!/accounts/{{account._id}}/transactions/create">
+            <i class="glyphicon glyphicon-plus"></i>
+        </a>
+    </span>
+    <div class="page-header">
+        <h2>Transactions</h2>
+    </div>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th class="text-right">Withdrawl</th>
+            <th class="text-right">Deposit</th>
+            <th class="text-right">Balance</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr data-ng-repeat="transaction in transactions | orderBy: ['-transactionDate','-created','+businessName']" data-ng-href="#!/accounts/{{account._id}}/transactions/{{transaction._id}}">
+            <td data-ng-bind="transaction.transactionDate | date"></td>
+            <td><a ng-href="/#!/accounts/{{account._id}}/transactions/{{transaction._id}}" data-ng-bind="transaction.businessName"></a></td>
+            <td class="text-right">
+                <em data-ng-if="transaction.deposit !== true" data-ng-bind="transaction.amount | currency"></em>
+            </td>
+            <td class="text-right">
+                <em data-ng-if="transaction.deposit === true" data-ng-bind="transaction.amount | currency"></em>
+            </td>
+            <td class="text-right" data-ng-bind="transaction.balanceAfter | currency"></td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="alert alert-warning text-center" data-ng-hide="!transactions.$resolved || transactions.length">
+    	No Transactions yet, why don't you <a data-ng-href="/#!/accounts/{{account._id}}/transactions/create">create one</a>?
+    </div>
+</section>
