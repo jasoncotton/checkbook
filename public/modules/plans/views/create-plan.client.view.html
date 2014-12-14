@@ -1,0 +1,75 @@
+<section data-ng-controller="PlansController">
+    <div class="page-header">
+        <h1>New Plan</h1>
+    </div>
+    <div class="col-md-12">
+        <form class="form-horizontal" data-ng-submit="create()" novalidate>
+            <fieldset>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="name">Name</label>
+                    <div class="controls col-sm-3">
+                        <input type="text" data-ng-model="name" id="name" class="form-control" placeholder="Name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="business">Business</label>
+                    <div class="controls col-sm-3">
+                        <input type="text" data-ng-model="business" id="business" class="form-control" placeholder="Business" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="amount">Amount</label>
+                    <div class="controls col-sm-3">
+                        <input type="text" data-ng-model="amount" id="amount" class="form-control" placeholder="$0.00" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="type">Type</label>
+                    <div class="controls col-sm-3">
+                        <select data-ng-model="type" class="form-control" id="type">
+                            <option value="">Select a Type</option>
+                            <option value="WITHDRAWAL">Withdrawal</option>
+                            <option value="DEPOSIT">Deposit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleDate">Scheduled Date</label>
+                    <div class="controls col-sm-3">
+                        <p class="input-group">
+                            <input type="text" class="form-control" id="scheduleDate" datepicker-popup="{{format}}" data-ng-model="schedule.date" is-open="opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleRecurrence">Reoccurs?</label>
+                    <div class="controls col-sm-3">
+                        <input type="checkbox" data-ng-model="schedule.recurrence" id="scheduleRecurrence" class="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleRecurrenceType">Recurrence Type</label>
+                    <div class="controls col-sm-2">
+                        <select class="form-control" data-ng-model="schedule.recurrenceType" id="scheduleRecurrenceType" data-ng-disabled="schedule.recurrence !== true">
+                            <option value="">Select a Type</option>
+                            <option value="X_DAYS">Every X Days</option>
+                            <option value="MONTH">Every Month</option>
+                        </select>
+                    </div>
+                    <div class="controls col-sm-2" data-ng-if="schedule.recurrenceType === 'X_DAYS'">
+                        <input type="text" name="scheduleRecurrenceDays" data-ng-model="schedule.recurrenceDays" class="form-control">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="submit" class="btn btn-default">
+                </div>
+				<div data-ng-show="error" class="text-danger">
+					<strong data-ng-bind="error"></strong>
+				</div>
+            </fieldset>
+        </form>
+    </div>
+</section>
