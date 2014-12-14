@@ -15,9 +15,9 @@ angular.module('transactions').controller('TransactionsController', ['$scope', '
 			var transaction = new Transactions ({
                 accountId: $scope.account._id,
                 businessName: this.businessName,
+                description: this.description,
                 amount: Number(this.amount),
-                deposit: this.deposit,
-                balanceAfter: Number($scope.account.balance) + (this.deposit ? Number(this.amount) : -Number(this.amount)),
+                transactionType: this.transactionType,
                 transactionDate: this.transactionDate
 			});
 
@@ -27,11 +27,11 @@ angular.module('transactions').controller('TransactionsController', ['$scope', '
 
                 // Clear form fields
                 $scope.businessName = '';
-                $scope.deposit = false;
+                $scope.description = '';
+                $scope.transactionType = '';
                 $scope.reconciled = false;
                 $scope.void = false;
                 $scope.amount = 0.00;
-                $scope.balance = 0.00;
                 $scope.transactionDate = new Date();
             }, function(errorResponse) {
                 $scope.error = errorResponse.data.message;
@@ -48,16 +48,8 @@ angular.module('transactions').controller('TransactionsController', ['$scope', '
 					}
 				}
 			} else {
-                transaction = $scope.transaction;
-                if (transaction.deposit) {
-                    $scope.account.balance -= transaction.amount;
-                } else {
-                    $scope.account.balance += transaction.amount;
-                }
-                $scope.account.$update(function (response) {
-                    $scope.transaction.$remove(function() {
-                        $location.path('accounts/' + $scope.account._id);
-                    });
+                $scope.transaction.$remove(function() {
+                    $location.path('accounts/' + $scope.account._id);
                 });
 			}
 		};

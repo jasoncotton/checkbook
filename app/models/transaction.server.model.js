@@ -21,6 +21,11 @@ var TransactionSchema = new Schema({
 		required: 'Please fill business name',
 		trim: true
 	},
+    description: {
+        type: String,
+        default: '',
+        trim: true
+    },
     amount: {
         type: Number,
         required: 'Please fill in the amount'
@@ -29,9 +34,18 @@ var TransactionSchema = new Schema({
         type: Number
     },
     category: [String],
-    deposit: Boolean,
+    transactionType: {
+        type: String,
+        default: 'WITHDRAWAL',
+        required: 'Please select a transaction type',
+        trim: true
+
+    },
     reconciled: Boolean,
-    void: Boolean,
+    void: {
+        type: Schema.ObjectId,
+        ref: 'Transaction'
+    },
     transactionDate: {
         type: Date,
         default: Date.now

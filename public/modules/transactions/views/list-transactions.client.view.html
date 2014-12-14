@@ -22,10 +22,10 @@
             <td data-ng-bind="transaction.transactionDate | date"></td>
             <td><a ng-href="/#!/accounts/{{account._id}}/transactions/{{transaction._id}}" data-ng-bind="transaction.businessName"></a></td>
             <td class="text-right">
-                <em data-ng-if="transaction.deposit !== true" data-ng-bind="transaction.amount | currency"></em>
+                <em data-ng-if="transaction.transactionType !== 'DEPOSIT'" data-ng-bind="transaction.amount | currency"></em>
             </td>
             <td class="text-right">
-                <em data-ng-if="transaction.deposit === true" data-ng-bind="transaction.amount | currency"></em>
+                <em data-ng-if="transaction.transactionType === 'DEPOSIT'" data-ng-bind="transaction.amount | currency"></em>
             </td>
             <td class="text-right" data-ng-bind="transaction.balanceAfter | currency"></td>
         </tr>

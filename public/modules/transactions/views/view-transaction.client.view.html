@@ -20,8 +20,10 @@
             <dl class="dl-horizontal" style="display: inline-block;">
                 <dt>Description</dt>
                 <dd data-ng-bind="transaction.businessName"></dd>
+                <dt>Transaction Type</dt>
+                <dd data-ng-bind="transaction.transactionType"></dd>
                 <dt>Amount</dt>
-                <dd data-ng-bind="(transaction.deposit ? 1 : -1) * transaction.amount | currency"></dd>
+                <dd data-ng-bind="(transaction.transactionType === 'DEPOSIT' ? 1 : -1) * transaction.amount | currency"></dd>
                 <dt>Balance After</dt>
                 <dd data-ng-bind="transaction.balanceAfter | currency"></dd>
                 <dt>Transaction Date</dt>

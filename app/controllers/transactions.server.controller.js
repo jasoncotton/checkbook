@@ -14,25 +14,49 @@ var mongoose = require('mongoose'),
  */
 exports.create = function(req, res) {
 	var transaction = new Transaction(req.body),
-        accountId = req.body.accountId;
-
-    console.log(accountId);
+        accountId = req.body.accountId,
+        account = Account.findById(accountId);
 
 	transaction.user = req.user;
 
-    if (typeof transaction.amount !== 'undefined' && transaction.amount !== 0) {
-        console.log('amounts were different');
-    }
 
-	transaction.save(function(err) {
-		if (err) {
-			return res.status(400).send({
-				message: errorHandler.getErrorMessage(err)
-			});
-		} else {
-			res.jsonp(transaction);
-		}
-	});
+    if (transaction.reconciled === true && typeof transaction.amount !== 'undefined' && transaction.amount !== 0) {
+        // In this case: update the account balance
+        if (transaction.transactionType === 'DEPOSIT') {
+            transaction.balanceAfter = account.balance + transaction.amount;
+        } else {
+            transaction.balanceAfter = account.balance - transaction.amount;
+        }
+        account.balance = transaction.balanceAfter;
+
+        account.save(function (err) {
+            if (err) {
+                return res.status(400).send({
+                    message: errorHandler.getErrorMessage(err)
+                });
+            } else {
+                transaction.save(function(err) {
+                    if (err) {
+                        return res.status(400).send({
+                            message: errorHandler.getErrorMessage(err)
+                        });
+                    } else {
+                        res.jsonp(transaction);
+                    }
+                });
+            }
+        });
+    } else {
+        transaction.save(function(err) {
+            if (err) {
+                return res.status(400).send({
+                    message: errorHandler.getErrorMessage(err)
+                });
+            } else {
+                res.jsonp(transaction);
+            }
+        });
+    }
 };
 
 /**
@@ -48,43 +72,50 @@ exports.read = function(req, res) {
 exports.update = function(req, res) {
 	var transaction = req.transaction,
         oldAmount = Number(transaction.amount),
-        oldDeposit = transaction.deposit === true;
+        wasReconciled = transaction.reconciled === true,
+        wasDeposit = transaction.transactionType === 'DEPOSIT',
+        account = Account.findById(transaction.accountId),
+        tmpBalance = account.balance;
 
 	transaction = _.extend(transaction, req.body);
 
-    if (oldAmount !== transaction.amount) {
-        // Have to update the balance on the account.
-        Account.findById(req.body.accountId).populate('user', 'displayName').exec(function(err, account) {
-            account.balance += (oldDeposit === true ? -1 : 1) * oldAmount;
-            account.balance -= (transaction.deposit === true ? -1 : 1) * transaction.amount;
-            console.log('about to save the account after changing balance...');
+    if (wasReconciled !== true) {
+        // We only allow edits to previously unreconciled transactions
+        if (transaction.reconciled === true) {
+            if (transaction.transactionType ==='DEPOSIT') {
+                transaction.balanceAfter = account.balance + transaction.amount;
+            } else {
+                transaction.balanceAfter = account.balance - transaction.amount;
+            }
+            account.balance = transaction.balanceAfter;
             account.save(function (err) {
                 if (err) {
                     return res.status(400).send({
                         message: errorHandler.getErrorMessage(err)
                     });
+                } else {
+                    transaction.save(function(err) {
+                        if (err) {
+                            return res.status(400).send({
+                                message: errorHandler.getErrorMessage(err)
+                            });
+                        } else {
+                            res.jsonp(transaction);
+                        }
+                    });
                 }
-                transaction.save(function(err) {
-                    if (err) {
-                        return res.status(400).send({
-                            message: errorHandler.getErrorMessage(err)
-                        });
-                    } else {
-                        res.jsonp(transaction);
-                    }
-                });
             });
-        });
-    } else {
-        transaction.save(function(err) {
-            if (err) {
-                return res.status(400).send({
-                    message: errorHandler.getErrorMessage(err)
-                });
-            } else {
-                res.jsonp(transaction);
-            }
-        });
+        } else {
+            transaction.save(function(err) {
+                if (err) {
+                    return res.status(400).send({
+                        message: errorHandler.getErrorMessage(err)
+                    });
+                } else {
+                    res.jsonp(transaction);
+                }
+            });
+        }
     }
 };
 
