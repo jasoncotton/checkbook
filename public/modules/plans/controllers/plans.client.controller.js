@@ -117,21 +117,29 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
             this.currentElement = null;
         }
         EventTracker.prototype.registerEvent = function registerEvent(year, month, day, event) {
-            console.log(year, month, day, event);
+            var compareFunction = function (a, b) {
+                if (a < b) {
+                    return -1;
+                } else if (a > b) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            };
             if (this.events[year] === undefined) {
                 this.events[year] = {months: []};
                 this.events.years.push(year);
-                this.events.years = this.events.years.sort();
+                this.events.years.sort(compareFunction);
             }
             if (this.events[year][month] === undefined) {
                 this.events[year][month] = {days: []};
                 this.events[year].months.push(month);
-                this.events[year].months = this.events[year].months.sort();
+                this.events[year].months.sort(compareFunction);
             }
             if (this.events[year][month][day] === undefined) {
                 this.events[year][month][day] = [];
                 this.events[year][month].days.push(day);
-                this.events[year][month].days = this.events[year][month].days.sort();
+                this.events[year][month].days.sort(compareFunction);
             }
             this.events[year][month][day].push(event);
         };
@@ -147,8 +155,6 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
                         month = events[year].months[currentMonth],
                         day = events[year][month].days[currentDay],
                         ret = events[year][month][day][currentElement++];
-
-                    console.log('year', year, 'month', month, 'day', day);
 
                     if (ret === undefined) {
                         // Finished with the last event of the day;
@@ -172,7 +178,6 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
                         }
                         ret = events[year][month][day][currentElement++];
                     }
-                    console.log('returning: ', ret);
                     return {event: ret, year: year, month: month, day: day};
                 }
             };
