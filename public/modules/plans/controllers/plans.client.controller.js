@@ -108,25 +108,150 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
 
         /* globals google */
         google.load('visualization', '1', {'packages':['annotatedtimeline']});
+
+        function EventTracker() {
+            this.events = {years: []};
+            this.currentYear = null;
+            this.currentMonth = null;
+            this.currentDay = null;
+            this.currentElement = null;
+        }
+        EventTracker.prototype.registerEvent = function registerEvent(year, month, day, event) {
+            console.log(year, month, day, event);
+            if (this.events[year] === undefined) {
+                this.events[year] = {months: []};
+                this.events.years.push(year);
+                this.events.years = this.events.years.sort();
+            }
+            if (this.events[year][month] === undefined) {
+                this.events[year][month] = {days: []};
+                this.events[year].months.push(month);
+                this.events[year].months = this.events[year].months.sort();
+            }
+            if (this.events[year][month][day] === undefined) {
+                this.events[year][month][day] = [];
+                this.events[year][month].days.push(day);
+                this.events[year][month].days = this.events[year][month].days.sort();
+            }
+            this.events[year][month][day].push(event);
+        };
+        EventTracker.prototype.iterator = function () {
+            var events = this.events,
+                currentYear = 0,
+                currentMonth = 0,
+                currentDay = 0,
+                currentElement = 0;
+            return {
+                next: function next() {
+                    var year = events.years[currentYear],
+                        month = events[year].months[currentMonth],
+                        day = events[year][month].days[currentDay],
+                        ret = events[year][month][day][currentElement++];
+
+                    console.log('year', year, 'month', month, 'day', day);
+
+                    if (ret === undefined) {
+                        // Finished with the last event of the day;
+                        currentElement = 0;
+                        day = events[year][month].days[++currentDay];
+                        if (events[year][month][day] === undefined) {
+                            // Finished with the last day of the month;
+                            currentDay = 0;
+                            month = events[year].months[++currentMonth];
+                            if (events[year][month] === undefined) {
+                                // Finished with the last month of the current year;
+                                currentMonth = 0;
+                                year = events.years[++currentYear];
+                                if (events[year] === undefined) {
+                                    // Finished with all of the events;
+                                    return null;
+                                }
+                                month = events[year].months[currentMonth];
+                            }
+                            day = events[year][month].days[currentDay];
+                        }
+                        ret = events[year][month][day][currentElement++];
+                    }
+                    console.log('returning: ', ret);
+                    return {event: ret, year: year, month: month, day: day};
+                }
+            };
+        };
+
         function drawChart() {
-            var i,
+            // This logic must be redone, we cannot just itterate over the items like this, since it messes up the balance.  We have to generate
+            // the list of events and the itterate over them a chronological order.
+
+            var i, j, k,
                 sum = 0,
                 rows = [],
-                daysThisMonth = 30;
+                daysThisMonth = 30,
+                plan,
+                plans = $scope.plans,
+                recurrenceEndPoint,
+                eventDate,
+                event,
+                events = {years: []},
+                eventYear, eventMonth, eventDay,
+                eventTracker = new EventTracker(),
+                iterator;
 
-            for (i = 1; i < daysThisMonth; i++) {
-                // Need to figure out how to determine if the given day alters the sum
-                rows.push([new Date(2014, 11, i), sum]);
+            for (i = 0; i < plans.length; i++) {
+                plan = plans[i];
+
+                recurrenceEndPoint = new Date(plan.schedule.date);
+                recurrenceEndPoint.setFullYear(recurrenceEndPoint.getFullYear() + 1);
+
+                eventDate = new Date(plan.schedule.date);
+                eventYear = eventDate.getFullYear();
+                eventMonth = eventDate.getMonth();
+                eventDay = eventDate.getDate();
+
+                eventTracker.registerEvent(eventYear, eventMonth, eventDay, plan);
+
+                if (plan.schedule.recurrence === true) {
+                    while (eventDate < recurrenceEndPoint) {
+                        if (plan.schedule.recurrenceType === 'MONTH') {
+                            eventDate.setMonth(eventDate.getMonth() + 1);
+                        } else if (plan.schedule.recurrenceType === 'X_DAYS') {
+                            eventDate.setDate(eventDate.getDate() + plan.schedule.recurrenceDays);
+                        } else {
+                            break;
+                        }
+
+                        eventYear = eventDate.getFullYear();
+                        eventMonth = eventDate.getMonth();
+                        eventDay = eventDate.getDate();
+
+                        eventTracker.registerEvent(eventYear, eventMonth, eventDay, plan);
+                    }
+                }
             }
 
+            iterator = eventTracker.iterator();
+            for (i = iterator.next(); i !== null; i = iterator.next()) {
+                if (i.event.type === 'WITHDRAWAL') {
+                    sum -= i.event.amount;
+                } else {
+                    sum += i.event.amount;
+                }
+                rows.push([new Date(i.year, i.month, i.day), sum, i.event.name, i.event.type + ' from ' + i.event.business]);
+            }
             var data = new google.visualization.DataTable();
             data.addColumn('date', 'Date');
             data.addColumn('number', 'Balance');
+            data.addColumn('string', 'title1');
+            data.addColumn('string', 'text1');
             data.addRows(rows);
 
             var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
             chart.draw(data, {displayAnnotations: true});
         }
-        drawChart();
+
+        $scope.deferredDrawChart = function () {
+            $scope.plans.$promise.then(function () {
+                drawChart();
+            });
+        };
     }
 ]);

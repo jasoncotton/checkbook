@@ -32,7 +32,10 @@ var PlanSchema = new Schema({
         trim: true
     },
     schedule: {
-        type: Object
+        date: Date,
+        recurrence: Boolean,
+        recurrenceDays: Number,
+        recurrenceType: String
     },
 	created: {
 		type: Date,
