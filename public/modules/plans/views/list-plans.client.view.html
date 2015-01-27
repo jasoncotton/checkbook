@@ -13,7 +13,8 @@
 			<h4 class="list-group-item-heading" data-ng-bind="plan.name"></h4>
             <div class="list-group-item-text">
                 <div data-ng-bind="plan.amount | currency"></div>
-                <small class="">Every X days</small>
+                <small class="" data-ng-if="plan.schedule.recurrenceType === 'X_DAYS'">Every <span data-ng-bind="plan.schedule.recurrenceDays"></span> days</small>
+                <small class="" data-ng-if="plan.schedule.recurrenceType === 'MONTH'">Every month</small>
             </div>
             <small class="list-group-item-text">
                 Posted on

@@ -183,6 +183,62 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
             };
         };
 
+        function drawHistogramChart(pStart, pEnd) {
+            if (pStart === undefined) {
+                pStart = new Date();
+                pStart.setDate(1);
+            }
+            if (pEnd === undefined) {
+                pEnd = new Date();
+                pEnd.setMonth(pEnd.getMonth() + 1);
+                pEnd.setDate(0);
+            }
+
+
+            console.log(pStart, pEnd);
+            var data, options, i,
+                tDate,
+                plan,
+                plans = $scope.plans,
+                plansLength = plans.length,
+                rows = [['Date', 'WITHDRAWAL', {type: 'string', role: 'tooltip'}, 'DEPOSIT', {type: 'string', role: 'tooltip'}]];
+
+            for (i = 0; i < plansLength; i++) {
+                plan = plans[i];
+                console.log('plan: ', plan);
+                tDate = new Date(plan.schedule.date);
+                while (+tDate < +pEnd) {
+                    if (+tDate > +pStart) {
+                        console.log('tDate: ', tDate);
+                        // Do stuff here
+                        if (plan.type === 'WITHDRAWAL') {
+                            rows.push([new Date(tDate.getTime()), plan.amount, plan.name + ': ' + plan.business + ' -$' + plan.amount.toFixed(2), null, null]);
+                        } else {
+                            rows.push([new Date(tDate.getTime()), null, null, plan.amount, plan.name + ': ' + plan.business + ' $' + plan.amount.toFixed(2)]);
+                        }
+
+                    }
+                    if (plan.schedule.recurrence === true) {
+                        if (plan.schedule.recurrenceType === 'MONTH') {
+                            tDate.setMonth(tDate.getMonth() + 1);
+                        } else if (plan.schedule.recurrenceType === 'X_DAYS') {
+                            tDate.setDate(tDate.getDate() + plan.schedule.recurrenceDays);
+                        }
+                    }
+                }
+            }
+
+            data = google.visualization.arrayToDataTable(rows);
+            options = {
+                title: 'Payments and dates',
+                hAxis: {title: pStart.toString() + ' - ' + pEnd.toString(), minValue: pStart, maxDate: pEnd},
+                vAxis: {title: 'Amount', minValue: 0},
+                legend: 'none'
+            };
+            var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+        }
+
         function drawChart() {
             // This logic must be redone, we cannot just itterate over the items like this, since it messes up the balance.  We have to generate
             // the list of events and the itterate over them a chronological order.
@@ -255,7 +311,10 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
 
         $scope.deferredDrawChart = function () {
             $scope.plans.$promise.then(function () {
+/*
                 drawChart();
+*/
+                drawHistogramChart();
             });
         };
     }
