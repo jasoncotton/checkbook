@@ -6,11 +6,54 @@
         <form class="form-horizontal" data-ng-submit="update()" novalidate>
             <fieldset>
                 <div class="form-group">
-                    <label class="control-label" for="name">Name</label>
-                    <div class="controls">
+                    <label class="control-label col-sm-2" for="name">Name</label>
+                    <div class="controls col-sm-3">
                         <input type="text" data-ng-model="plan.name" id="name" class="form-control" placeholder="Name" required>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="business">Business</label>
+                    <div class="controls col-sm-3">
+                        <input type="text" data-ng-model="plan.business" id="business" class="form-control" placeholder="Business" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="name">Amount</label>
+                    <div class="controls col-sm-2">
+                        <input type="text" data-ng-model="plan.amount" id="amount" class="form-control" placeholder="Amount">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleDate">Scheduled Date</label>
+                    <div class="controls col-sm-3">
+                        <p class="input-group">
+                            <input type="text" class="form-control" id="scheduleDate" datepicker-popup="{{format}}" data-ng-model="plan.schedule.date" is-open="opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleRecurrence">Reoccurs?</label>
+                    <div class="controls col-sm-3">
+                        <input type="checkbox" data-ng-model="plan.schedule.recurrence" id="scheduleRecurrence" class="">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label col-sm-2" for="scheduleRecurrenceType">Recurrence Type</label>
+                    <div class="controls col-sm-2">
+                        <select class="form-control" data-ng-model="plan.schedule.recurrenceType" id="scheduleRecurrenceType" data-ng-disabled="schedule.recurrence !== true">
+                            <option value="">Select a Type</option>
+                            <option value="X_DAYS">Every X Days</option>
+                            <option value="MONTH">Every Month</option>
+                        </select>
+                    </div>
+                    <div class="controls col-sm-2" data-ng-if="plan.schedule.recurrenceType === 'X_DAYS'">
+                        <input type="text" name="scheduleRecurrenceDays" data-ng-model="plan.schedule.recurrenceDays" class="form-control">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <input type="submit" value="Update" class="btn btn-default">
                 </div>

@@ -183,16 +183,25 @@ angular.module('plans').controller('PlansController', ['$scope', '$stateParams',
             };
         };
 
+        $scope.updateGraph = function (startDate, endDate) {
+            drawHistogramChart(startDate, endDate);
+        };
+
         function drawHistogramChart(pStart, pEnd) {
             if (pStart === undefined) {
                 pStart = new Date();
                 pStart.setDate(1);
             }
+            // pad out the start day by a week.
+            pStart.setDate(pStart.getDate() - 7);
+
             if (pEnd === undefined) {
                 pEnd = new Date();
                 pEnd.setMonth(pEnd.getMonth() + 1);
                 pEnd.setDate(0);
             }
+            // pad out the end day by a week
+            pEnd.setDate(pEnd.getDate() + 7);
 
 
             console.log(pStart, pEnd);
